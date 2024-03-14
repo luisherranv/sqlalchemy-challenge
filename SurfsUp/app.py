@@ -85,19 +85,25 @@ def temps():
 
     return jsonify(most_act_list)
 
-@app.route("/api/v1.0/<start>")
-def start(start):
-    temps_query = session.query(Measurement.date, Measurement.tobs).\
-            filter(Measurement.date > start).all()
-    temps_list = [{'date': row.date, \
-                   'temps': row.tobs} for row in temps_query]
-    canonicalized = start.replace(" ", "").lower()
-    for date in temps_list:
-        search_term = date["date"].replace(" ", "").lower()
+@app.route("/api/v1.0/<date_in>")
+def start(date_in):
+    date_temps = session.query(func.min(Measurement.tobs).label('min_temp'), \
+             func.max(Measurement.tobs).label('max_temp'), \
+             func.avg(Measurement.tobs).label('avg_temp')).filter(Measurement.date > date_in).all()
+    labels = ['min_temp', 'max_temp', 'avg_temp']
+    result = [dict(zip(labels, sublist)) for sublist in date_temps]
 
-        if search_term == canonicalized:
-            return jsonify(date)
+    return jsonify(result)
 
+@app.route("/api/v1.0/<date_st>/<date_end>")
+def range(date_st, date_end):
+    date_temps = session.query(func.min(Measurement.tobs).label('min_temp'), \
+             func.max(Measurement.tobs).label('max_temp'), \
+             func.avg(Measurement.tobs).label('avg_temp')).filter(Measurement.date > date_st).filter(Measurement.date < date_end).all()
+    labels = ['min_temp', 'max_temp', 'avg_temp']
+    result = [dict(zip(labels, sublist)) for sublist in date_temps]
+
+    return jsonify(result)
 
 
 if __name__ == "__main__":
