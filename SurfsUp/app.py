@@ -56,6 +56,8 @@ def home():
     )
 
 
+
+# Precipitation route
 @app.route("/api/v1.0/precipitation")
 def prcp():
     one_yr_before = dt.date(2017, 8, 23) - dt.timedelta(days=365)
@@ -67,6 +69,7 @@ def prcp():
                    'prcp': row.prcp} for row in one_yr_query]
     return jsonify(one_yr_list)
 
+# Stations route
 @app.route("/api/v1.0/stations")
 def stations():
     station_query = session.query(Station)
@@ -76,6 +79,7 @@ def stations():
                             for row in station_query]
     return jsonify(station_list)
 
+#Temperatures route
 @app.route("/api/v1.0/tobs")
 def temps():
     most_act_df = pd.DataFrame(session.query(func.min(Measurement.tobs).label('min_temp'), \
@@ -87,6 +91,7 @@ def temps():
 
     return jsonify(most_act_list)
 
+#Dynamic-Start Route
 @app.route("/api/v1.0/<date_in>")
 def start(date_in):
     date_temps = session.query(func.min(Measurement.tobs).label('min_temp'), \
@@ -97,6 +102,7 @@ def start(date_in):
 
     return jsonify(result)
 
+#Dynamic-Start/End Route
 @app.route("/api/v1.0/<date_st>/<date_end>")
 def range(date_st, date_end):
     date_temps = session.query(func.min(Measurement.tobs).label('min_temp'), \
